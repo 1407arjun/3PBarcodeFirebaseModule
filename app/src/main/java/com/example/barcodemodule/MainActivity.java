@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // of IntentIntegrator class
         // which is the class of QR library
         IntentIntegrator intentIntegrator = new IntentIntegrator(this);
-        intentIntegrator.setPrompt("Scan a barcode or QR Code");
+        intentIntegrator.setPrompt("Scan a barcode");
         intentIntegrator.setOrientationLocked(true);
         intentIntegrator.initiateScan();
     }
@@ -84,67 +84,73 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     if (snapshot.exists()) {
                                         name = snapshot.getData().get("name").toString();
                                         expiry = Integer.parseInt(snapshot.getData().get("expiry").toString());
-                                        Log.i("namex", name);
                                         nameText.setText(name);
                                         expiryText.setText("Expires in: " + expiry + " months");
+
+                                        entryStatus();
+
+                                        Log.i("xoxo", Boolean.toString(entryExists));
+
+                                        if (!entryExists) {
+                                            Map<String, Object> entry = new HashMap<>();
+                                            entry.put("name", name);
+                                            entry.put("expiry", expiry);
+                                            entry.put("quantity", 1);
+
+                                            db.collection("UserEntries").document(barcode).set(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        Toast.makeText(MainActivity.this, "Product added successfully", Toast.LENGTH_SHORT).show();
+                                                        quantityText.setText("Quantity: " + 1);
+                                                    }
+                                                }
+                                            });
+
+                                        }else{
+                                            db.collection("UserEntries").document(barcode).get()
+                                                    .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                                        @Override
+                                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                            DocumentSnapshot snapshot = task.getResult();
+                                                            if (snapshot.exists()) {
+                                                                currentQuantity = Integer.parseInt(snapshot.getData().get("quantity").toString());
+                                                                currentQuantity++;
+                                                                db.collection("UserEntries").document(barcode).update("quantity", currentQuantity)
+                                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                                            @Override
+                                                                            public void onComplete(@NonNull Task<Void> task) {
+                                                                                Toast.makeText(MainActivity.this, "Product added successfully", Toast.LENGTH_SHORT).show();
+                                                                                quantityText.setText("Quantity: " + currentQuantity);
+                                                                            }
+                                                                        });
+                                                            }
+                                                        }
+                                                    });
+                                        }
                                     }
                                 }
                             }
                         });
-
-                db.collection("UserEntries").document(barcode).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot document = task.getResult();
-                            if (document.exists()) {
-                                entryExists = true;
-                            } else {
-                                entryExists = false;
-                            }
-                        }
-                    }
-                });
-                if (!entryExists) {
-                    Map<String, Object> entry = new HashMap<>();
-                    entry.put("name", name);
-                    entry.put("expiry", expiry);
-                    entry.put("quantity", 1);
-
-                    db.collection("UserEntries").document(barcode).set(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(MainActivity.this, "Product added successfully", Toast.LENGTH_SHORT).show();
-                                quantityText.setText("Quantity: " + 1);
-                            }
-                        }
-                    });
-
-                }else{
-                    db.collection("UserEntries").document(barcode).get()
-                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    DocumentSnapshot snapshot = task.getResult();
-                                    if (snapshot.exists()) {
-                                        currentQuantity = Integer.parseInt(snapshot.getData().get("quantity").toString());
-                                        currentQuantity++;
-                                        db.collection("UserEntries").document(barcode).update("quantity", currentQuantity)
-                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                    @Override
-                                                    public void onComplete(@NonNull Task<Void> task) {
-                                                        Toast.makeText(MainActivity.this, "Product added successfully", Toast.LENGTH_SHORT).show();
-                                                        quantityText.setText("Quantity: " + currentQuantity);
-                                                    }
-                                                });
-                                    }
-                                }
-                            });
-                }
             }
         }else{
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    public void entryStatus(){
+        db.collection("UserEntries").document(barcode).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+                    if (document.exists()) {
+                        entryExists = true;
+                    } else {
+                        entryExists = false;
+                    }
+                }
+            }
+        });
     }
 }
