@@ -34,6 +34,35 @@
           ]
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:756125205270:android:ad6b05cb634ad7b4900637",
+        "android_client_info": {
+          "package_name": "com.example.barcodescanner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "756125205270-7o0atajilf51g5g63kqaol27op75eftj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBHPQcYnRMOq2F9XPT_GIFxt9JRRVwJovg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "756125205270-7o0atajilf51g5g63kqaol27op75eftj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
     }
   ],
   "configuration_version": "1"
