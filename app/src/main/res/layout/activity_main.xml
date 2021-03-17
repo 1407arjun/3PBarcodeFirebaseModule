@@ -50,4 +50,12 @@
         android:layout_margin="10dp"
         android:layout_height="wrap_content" />
 
+    <TextView
+        android:id="@+id/quantityTextView"
+        android:text="Product quantity"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
+        android:layout_height="wrap_content" />
+
 </LinearLayout>

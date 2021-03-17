@@ -2,6 +2,7 @@ package com.example.barcodemodule;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -25,9 +26,10 @@ import java.util.Map;
 // implements onClickListener for the onclick behaviour of button
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     Button scanBtn;
-    TextView messageText, messageFormat, nameText, expiryText;
+    TextView messageText, messageFormat, nameText, expiryText, quantityText;
     String barcode, name;
-    int expiry;
+    int expiry, currentQuantity;
+    boolean entryExists;
     FirebaseFirestore db;
 
     @Override
@@ -42,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         messageFormat = findViewById(R.id.barcodeFormatTextView);
         nameText = findViewById(R.id.nameTextView);
         expiryText = findViewById(R.id.expiryTextView);
-
+        quantityText = findViewById(R.id.quantityTextView);
         db = FirebaseFirestore.getInstance();
     }
 
@@ -77,11 +79,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                if (task.isSuccessful()){
+                                if (task.isSuccessful()) {
                                     DocumentSnapshot snapshot = task.getResult();
                                     if (snapshot.exists()) {
                                         name = snapshot.getData().get("name").toString();
                                         expiry = Integer.parseInt(snapshot.getData().get("expiry").toString());
+                                        Log.i("namex", name);
                                         nameText.setText(name);
                                         expiryText.setText("Expires in: " + expiry + " months");
                                     }
@@ -89,21 +92,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         });
 
-                HashMap<String, Object> entry = new HashMap<>();
-                entry.put("name", name);
-                entry.put("expiry", expiry);
-                entry.put("quantity", 1);
-
-                db.collection("UserEntries").document(barcode).set(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
+                db.collection("UserEntries").document(barcode).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()){
-                            Toast.makeText(MainActivity.this, "Product added successfully", Toast.LENGTH_SHORT).show();
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            if (document.exists()) {
+                                entryExists = true;
+                            } else {
+                                entryExists = false;
+                            }
                         }
                     }
                 });
+                if (!entryExists) {
+                    Map<String, Object> entry = new HashMap<>();
+                    entry.put("name", name);
+                    entry.put("expiry", expiry);
+                    entry.put("quantity", 1);
+
+                    db.collection("UserEntries").document(barcode).set(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(MainActivity.this, "Product added successfully", Toast.LENGTH_SHORT).show();
+                                quantityText.setText("Quantity: " + 1);
+                            }
+                        }
+                    });
+
+                }else{
+                    db.collection("UserEntries").document(barcode).get()
+                            .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    DocumentSnapshot snapshot = task.getResult();
+                                    if (snapshot.exists()) {
+                                        currentQuantity = Integer.parseInt(snapshot.getData().get("quantity").toString());
+                                        currentQuantity++;
+                                        db.collection("UserEntries").document(barcode).update("quantity", currentQuantity)
+                                                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<Void> task) {
+                                                        Toast.makeText(MainActivity.this, "Product added successfully", Toast.LENGTH_SHORT).show();
+                                                        quantityText.setText("Quantity: " + currentQuantity);
+                                                    }
+                                                });
+                                    }
+                                }
+                            });
+                }
             }
-        } else {
+        }else{
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
