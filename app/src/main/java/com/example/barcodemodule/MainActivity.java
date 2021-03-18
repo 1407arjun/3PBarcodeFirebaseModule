@@ -24,7 +24,6 @@ import com.google.zxing.integration.android.IntentResult;
 import java.util.HashMap;
 import java.util.Map;
 
-// implements onClickListener for the onclick behaviour of button
 public class MainActivity extends AppCompatActivity {
     TextView messageText, messageFormat, nameText, expiryText, quantityText;
     String barcode, name, user;
@@ -65,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         // which is the class of QR library
         IntentIntegrator intentIntegrator = new IntentIntegrator(this);
         intentIntegrator.setPrompt("Scan a barcode");
-        intentIntegrator.setOrientationLocked(true);
+        intentIntegrator.setOrientationLocked(false);
         intentIntegrator.initiateScan();
     }
 
