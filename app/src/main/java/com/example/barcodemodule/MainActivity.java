@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -24,10 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 // implements onClickListener for the onclick behaviour of button
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    Button scanBtn;
+public class MainActivity extends AppCompatActivity {
     TextView messageText, messageFormat, nameText, expiryText, quantityText;
-    String barcode, name;
+    String barcode, name, user;
     int expiry, currentQuantity;
     boolean entryExists;
     FirebaseFirestore db;
@@ -39,16 +39,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // referencing and initializing
         // the button and textviews
-        scanBtn = findViewById(R.id.scanButton);
+        user = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+
+        Button logout = findViewById(R.id.logoutButton);
         messageText = findViewById(R.id.barcodeTextView);
         messageFormat = findViewById(R.id.barcodeFormatTextView);
         nameText = findViewById(R.id.nameTextView);
         expiryText = findViewById(R.id.expiryTextView);
         quantityText = findViewById(R.id.quantityTextView);
         db = FirebaseFirestore.getInstance();
+
+        logout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                startActivity(new Intent(MainActivity.this, LoginActivity.class));
+                finish();
+            }
+        });
     }
 
-    @Override
     public void onClick(View view) {
         // we need to create the object
         // of IntentIntegrator class
@@ -67,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // toast a message as "cancelled"
         if (intentResult != null) {
             if (intentResult.getContents() == null) {
-                Toast.makeText(getBaseContext(), "Cancelled", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getBaseContext(), "Scan cancelled", Toast.LENGTH_SHORT).show();
             } else {
                 // if the intentResult is not null we'll set
                 // the content and format of scan message
@@ -97,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             entry.put("expiry", expiry);
                                             entry.put("quantity", 1);
 
-                                            db.collection("UserEntries").document(barcode).set(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                            db.collection(user).document(barcode).set(entry).addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
                                                     if (task.isSuccessful()) {
@@ -108,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                             });
 
                                         }else{
-                                            db.collection("UserEntries").document(barcode).get()
+                                            db.collection(user).document(barcode).get()
                                                     .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                                         @Override
                                                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -139,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     public void entryStatus(){
-        db.collection("UserEntries").document(barcode).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+        db.collection(user).document(barcode).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 if (task.isSuccessful()) {
