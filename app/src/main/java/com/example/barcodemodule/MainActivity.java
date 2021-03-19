@@ -24,8 +24,18 @@ import com.google.zxing.integration.android.IntentResult;
 import java.util.HashMap;
 import java.util.Map;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MainActivity extends AppCompatActivity {
-    TextView messageText, messageFormat, nameText, expiryText, quantityText;
+
+    @BindView(R.id.logoutButton) Button logoutButton;
+    @BindView(R.id.barcodeTextView) TextView barcodeTextView;
+    @BindView(R.id.barcodeFormatTextView) TextView barcodeFormatTextView;
+    @BindView(R.id.nameTextView) TextView nameTextView;
+    @BindView(R.id.expiryTextView) TextView expiryTextView;
+    @BindView(R.id.quantityTextView) TextView quantityTextView;
+
     String barcode, name, user;
     int expiry, currentQuantity;
     boolean entryExists;
@@ -36,19 +46,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // referencing and initializing
-        // the button and textviews
+        ButterKnife.bind(this);
         user = FirebaseAuth.getInstance().getCurrentUser().getEmail();
 
-        Button logout = findViewById(R.id.logoutButton);
-        messageText = findViewById(R.id.barcodeTextView);
-        messageFormat = findViewById(R.id.barcodeFormatTextView);
-        nameText = findViewById(R.id.nameTextView);
-        expiryText = findViewById(R.id.expiryTextView);
-        quantityText = findViewById(R.id.quantityTextView);
         db = FirebaseFirestore.getInstance();
 
-        logout.setOnClickListener(new View.OnClickListener() {
+        logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 FirebaseAuth.getInstance().signOut();
@@ -59,8 +62,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClick(View view) {
-        // we need to create the object
-        // of IntentIntegrator class
+        // we need to create the object of IntentIntegrator class
         // which is the class of QR library
         IntentIntegrator intentIntegrator = new IntentIntegrator(this);
         intentIntegrator.setPrompt("Scan a barcode");
@@ -72,16 +74,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         IntentResult intentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        // if the intentResult is null then
-        // toast a message as "cancelled"
+        // if the intentResult is null then toast a message as "cancelled"
         if (intentResult != null) {
             if (intentResult.getContents() == null) {
                 Toast.makeText(getBaseContext(), "Scan cancelled", Toast.LENGTH_SHORT).show();
             } else {
                 // if the intentResult is not null we'll set
                 // the content and format of scan message
-                messageText.setText(intentResult.getContents());
-                messageFormat.setText(intentResult.getFormatName());
+                barcodeTextView.setText(intentResult.getContents());
+                barcodeFormatTextView.setText(intentResult.getFormatName());
                 barcode = intentResult.getContents();
 
                 db.collection("Barcode Data").document(barcode).get()
@@ -93,8 +94,8 @@ public class MainActivity extends AppCompatActivity {
                                     if (snapshot.exists()) {
                                         name = snapshot.getData().get("name").toString();
                                         expiry = Integer.parseInt(snapshot.getData().get("expiry").toString());
-                                        nameText.setText(name);
-                                        expiryText.setText("Expires in: " + expiry + " months");
+                                        nameTextView.setText(name);
+                                        expiryTextView.setText("Expires in: " + expiry + " months");
 
                                         entryStatus();
 
@@ -111,7 +112,7 @@ public class MainActivity extends AppCompatActivity {
                                                 public void onComplete(@NonNull Task<Void> task) {
                                                     if (task.isSuccessful()) {
                                                         Toast.makeText(MainActivity.this, "Product added successfully", Toast.LENGTH_SHORT).show();
-                                                        quantityText.setText("Quantity: " + 1);
+                                                        quantityTextView.setText("Quantity: " + 1);
                                                     }
                                                 }
                                             });
@@ -126,12 +127,9 @@ public class MainActivity extends AppCompatActivity {
                                                                 currentQuantity = Integer.parseInt(snapshot.getData().get("quantity").toString());
                                                                 currentQuantity++;
                                                                 db.collection("UserEntries").document(barcode).update("quantity", currentQuantity)
-                                                                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                                                            @Override
-                                                                            public void onComplete(@NonNull Task<Void> task) {
-                                                                                Toast.makeText(MainActivity.this, "Product added successfully", Toast.LENGTH_SHORT).show();
-                                                                                quantityText.setText("Quantity: " + currentQuantity);
-                                                                            }
+                                                                        .addOnCompleteListener(task1 -> {
+                                                                            Toast.makeText(MainActivity.this, "Product added successfully", Toast.LENGTH_SHORT).show();
+                                                                            quantityTextView.setText("Quantity: " + currentQuantity);
                                                                         });
                                                             }
                                                         }
@@ -148,17 +146,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void entryStatus(){
-        db.collection(user).document(barcode).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DocumentSnapshot document = task.getResult();
-                    if (document.exists()) {
-                        entryExists = true;
-                    } else {
-                        entryExists = false;
-                    }
-                }
+        db.collection(user).document(barcode).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                entryExists = document.exists();
             }
         });
     }
