@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -14,25 +13,25 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="10dp"
-        android:text="messageContent"/>
+        android:text="messageContent" />
 
     <TextView
         android:id="@+id/barcodeFormatTextView"
-        android:text="messageFormat"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="10dp"
-        android:layout_height="wrap_content" />
+        android:text="messageFormat" />
 
     <Button
         android:id="@+id/scanButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:onClick="onClick"
-        android:backgroundTint="#0F9D58"
         android:layout_gravity="center"
-        android:text="Scan"/>
+        android:layout_margin="10dp"
+        android:backgroundTint="#0F9D58"
+        android:onClick="onClick"
+        android:text="Scan" />
 
     <TextView
         android:id="@+id/nameTextView"
@@ -40,23 +39,23 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="10dp"
-        android:text="Product name"/>
+        android:text="Product name" />
 
     <TextView
         android:id="@+id/expiryTextView"
-        android:text="Product expiry"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="10dp"
-        android:layout_height="wrap_content" />
+        android:text="Product expiry" />
 
     <TextView
         android:id="@+id/quantityTextView"
-        android:text="Product quantity"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="10dp"
-        android:layout_height="wrap_content" />
+        android:text="Product quantity" />
 
     <Button
         android:id="@+id/logoutButton"

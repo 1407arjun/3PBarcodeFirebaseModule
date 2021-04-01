@@ -35,6 +35,7 @@ public class RegisterActivity extends AppCompatActivity {
             filledREmailTextField.setError(null);
             filledRPasswordTextField.setError(null);
             filledConfirmPasswordTextField.setError(null);
+
             if (email.isEmpty()){
                 filledREmailTextField.setError("Field cannot be empty");
             }else if (password.isEmpty()){

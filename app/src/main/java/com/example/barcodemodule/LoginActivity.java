@@ -42,6 +42,7 @@ public class LoginActivity extends AppCompatActivity {
             String password = passwordEditText.getText().toString();
             filledEmailTextField.setError(null);
             filledPasswordTextField.setError(null);
+
             if (!email.isEmpty() && !password.isEmpty()) {
                 firebaseAuth.signInWithEmailAndPassword(email, password).addOnSuccessListener(authResult -> {
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);

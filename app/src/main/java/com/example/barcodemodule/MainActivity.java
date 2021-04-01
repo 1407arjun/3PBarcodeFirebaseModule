@@ -62,8 +62,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onClick(View view) {
-        // we need to create the object of IntentIntegrator class
-        // which is the class of QR library
+
         IntentIntegrator intentIntegrator = new IntentIntegrator(this);
         intentIntegrator.setPrompt("Scan a barcode");
         intentIntegrator.setOrientationLocked(false);
